@@ -6,6 +6,7 @@ from slowapi.errors import RateLimitExceeded
 
 from app.api.routes import register_routes
 from app.core.logging import setup_logging
+from app.core.exception_handler import GlobalExceptionMiddleware
 
 from app.core.rate_limiter import limiter
 
@@ -25,12 +26,13 @@ app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # ["https://frontend-domain.com","http://localhost:3000"]
+    allow_origins=["*"],  # ["http://localhost:3000"]
     allow_credentials=True,
     allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
     allow_headers=["Authorization", "Content-Type"],
 )
 
+app.add_middleware(GlobalExceptionMiddleware)
 register_routes(app)
 
 
