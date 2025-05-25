@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException, Query
+from fastapi import APIRouter, Depends, Query
 from sqlalchemy.ext.asyncio import AsyncSession
 from uuid import UUID
 from typing import List
@@ -26,7 +26,7 @@ async def create_message(
 )
 async def get_messages(
     session_id: UUID,
-    db: AsyncSession = Depends(api_key_auth),
+    db: AsyncSession = Depends(get_db),
     limit: int = Query(20),
     offset: int = Query(0),
 ):

@@ -23,3 +23,11 @@ class ChatSessionOut(BaseModel):
 
     class config:
         orm_mode = True
+
+
+class RenameSession(BaseModel):
+    title: str
+
+
+class FavoriteSession(BaseModel):
+    is_favorite: bool

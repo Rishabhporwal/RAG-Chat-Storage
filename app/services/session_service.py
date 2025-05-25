@@ -1,54 +1,65 @@
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
-from sqlalchemy import update, delete
-from uuid import UUID
+from fastapi import HTTPException
 
 from app.db.models import ChatSession
-from app.schemas.session import ChatSessionCreate, ChatSessionUpdate
+from app.schemas.session import ChatSessionCreate
 
 
-async def create_session(
+async def create_chat_session(
     db: AsyncSession, session_data: ChatSessionCreate
 ) -> ChatSession:
-    print("SessionData", session_data)
-    new_session = ChatSession(**session_data.dict())
+    new_session = ChatSession(user_id=session_data.user_id, title=session_data.title)
     db.add(new_session)
     await db.commit()
     await db.refresh(new_session)
     return new_session
 
 
-async def get_session(db: AsyncSession, session_id: UUID) -> ChatSession:
-    result = await db.execute(select(ChatSession).where(ChatSession.id == session_id))
-    return result.scalar_one_or_none()
+async def get_chat_session_by_user(
+    db: AsyncSession, user_id: str, is_favorite: bool = False
+):
+    print("UserId", user_id)
+    print("Is_Favorite", is_favorite)
+    query = select(ChatSession).where(ChatSession.user_id == user_id)
+    if is_favorite:
+        query = query.where(ChatSession.is_favorite == True)
+    result = await db.execute(query.order_by(ChatSession.created_at.desc()))
+    return result.scalars().all()
 
 
-async def update_session(
-    db: AsyncSession, session_id: UUID, updates: ChatSessionUpdate
-) -> ChatSession:
-    result = await db.execute(select(ChatSession).where(ChatSession.id == session_id))
+async def rename_chat_session(db: AsyncSession, session_id: str, new_title: str):
+    query = select(ChatSession).where(ChatSession.id == session_id)
+    result = await db.execute(query)
     session = result.scalar_one_or_none()
-    if session:
-        for field, value in updates.dict(exclude_unset=True).items():
-            setattr(session, field, value)
+    if not session:
+        raise HTTPException(status_code=404, detail="Session not found")
 
-        await db.commit()
-        await db.refresh(session)
-
+    session.title = new_title
+    await db.commit()
+    await db.refresh(session)
     return session
 
 
-async def delete_session(db: AsyncSession, session_id: UUID):
-    result = db.execute(delete(ChatSession).where(ChatSession.id == session_id))
+async def set_favorite_status(db: AsyncSession, session_id: str, is_favorite: bool):
+    query = select(ChatSession).where(ChatSession.id == session_id)
+    result = await db.execute(query)
+    session = result.scalar_one_or_none()
+    if not session:
+        raise HTTPException(status_code=404, detail="Session not found")
+
+    session.is_favorite = is_favorite
     await db.commit()
-    return result
+    await db.refresh(session)
+    return session
 
 
-async def list_sessions(db: AsyncSession, user_id: str):
-    result = await db.execute(
-        select(ChatSession)
-        .where(ChatSession.user_id == user_id)
-        .order_by(ChatSession.created_at.desc())
-    )
+async def delete_chat_session(db: AsyncSession, session_id: str):
+    query = select(ChatSession).where(ChatSession.id == session_id)
+    result = await db.execute(query)
+    session = result.scalar_one_or_none()
+    if not session:
+        raise HTTPException(status_code=404, detail="Session not found")
 
-    return result.scalars().all()
+    await db.delete(session)
+    await db.commit()

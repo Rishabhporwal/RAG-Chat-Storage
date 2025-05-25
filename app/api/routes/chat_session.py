@@ -1,15 +1,19 @@
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, Query
 from sqlalchemy.ext.asyncio import AsyncSession
-from uuid import UUID
-from typing import List
+from typing import List, Optional
 
-from app.schemas.session import ChatSessionCreate, ChatSessionOut, ChatSessionUpdate
+from app.schemas.session import (
+    ChatSessionCreate,
+    ChatSessionOut,
+    RenameSession,
+    FavoriteSession,
+)
 from app.services.session_service import (
-    create_session,
-    get_session,
-    update_session,
-    delete_session,
-    list_sessions,
+    create_chat_session,
+    get_chat_session_by_user,
+    rename_chat_session,
+    set_favorite_status,
+    delete_chat_session,
 )
 from app.db.session import get_db
 from app.core.security import api_key_auth
@@ -17,41 +21,53 @@ from app.core.security import api_key_auth
 router = APIRouter(prefix="/session", tags=["Chat Sessions"])
 
 
-@router.post("/", response_model=ChatSessionOut, dependencies=[Depends(api_key_auth)])
-async def create_chat_session(
+@router.post(
+    "/",
+    response_model=ChatSessionOut,
+    status_code=201,
+    dependencies=[Depends(api_key_auth)],
+)
+async def create_sessions(
     session: ChatSessionCreate, db: AsyncSession = Depends(get_db)
 ):
-    return await create_session(db, session)
-
-
-@router.get(
-    "/{session_id}", response_model=ChatSessionOut, dependencies=[Depends(api_key_auth)]
-)
-async def read_chat_session(session_id: UUID, db: AsyncSession = Depends(get_db)):
-    session = await get_session(db, session_id)
-    if not session:
-        raise HTTPException(status_code=404, detail="Session Not Found")
-    return session
+    return await create_chat_session(db, session)
 
 
 @router.get(
     "/", response_model=List[ChatSessionOut], dependencies=[Depends(api_key_auth)]
 )
-async def list_chat_session(user_id: str, db: AsyncSession = Depends(get_db)):
-    return await list_sessions(db, user_id)
-
-
-@router.patch(
-    "/{session_id}", response_model=ChatSessionOut, dependencies=[Depends(api_key_auth)]
-)
-async def update_chat_session(
-    session_id: UUID, updates: ChatSessionUpdate, db: AsyncSession = Depends(get_db)
+async def get_sessions(
+    user_id: str,
+    is_favorite: Optional[bool] = Query(False),
+    db: AsyncSession = Depends(get_db),
 ):
-    session = await update_session(db, session_id, updates)
-    if not session:
-        raise HTTPException(status_code=404, detail="Session not found")
+    return await get_chat_session_by_user(db, user_id=user_id, is_favorite=is_favorite)
+
+
+@router.put(
+    "/{session_id}/rename",
+    response_model=ChatSessionOut,
+    dependencies=[Depends(api_key_auth)],
+)
+async def rename_session(
+    session_id: str, payload: RenameSession, db: AsyncSession = Depends(get_db)
+):
+    return await rename_chat_session(db, session_id=session_id, new_title=payload.title)
+
+
+@router.put(
+    "/{session_id}/favorite",
+    response_model=ChatSessionOut,
+    dependencies=[Depends(api_key_auth)],
+)
+async def toggle_favorite(
+    session_id: str, payload: FavoriteSession, db: AsyncSession = Depends(get_db)
+):
+    return await set_favorite_status(
+        db, session_id=session_id, is_favorite=payload.is_favorite
+    )
 
 
 @router.delete("/{session_id}", status_code=204, dependencies=[Depends(api_key_auth)])
-async def delete_chat_session(session_id: UUID, db: AsyncSession = Depends(get_db)):
-    await delete_session(db, session_id)
+async def delete_session(session_id: str, db: AsyncSession = Depends(get_db)):
+    await delete_chat_session(db, session_id=session_id)
