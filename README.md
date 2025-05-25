@@ -54,7 +54,7 @@ RATE_LIMIT=10/minute
 LOG_LEVEL=INFO
 ```
 
-### 5. Run with Docker Compose
+### 3. Run with Docker Compose
 
 ```bash
 docker-compose up --build
