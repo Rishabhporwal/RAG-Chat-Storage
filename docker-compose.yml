@@ -1,4 +1,4 @@
-version: '3.9'
+version: '4.0'
 
 services:
   db:
@@ -39,13 +39,6 @@ services:
     depends_on:
       - db
     entrypoint: ["/bin/sh", "app/wait-for-postgres.sh", "db", "uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]
-
-
-  redis:
-    image: redis:alpine
-    container_name: rag_redis
-    ports:
-      - "6379:6379"
 
 volumes:
   postgres_data:
