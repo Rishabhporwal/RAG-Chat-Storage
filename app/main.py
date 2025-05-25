@@ -5,9 +5,8 @@ from slowapi import _rate_limit_exceeded_handler
 from slowapi.errors import RateLimitExceeded
 
 from app.api.routes import register_routes
-from app.core.config import settings
 from app.core.logging import setup_logging
-from app.core.security import api_key_auth
+
 from app.core.rate_limiter import limiter
 
 setup_logging()

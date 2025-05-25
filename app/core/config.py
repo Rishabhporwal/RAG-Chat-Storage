@@ -10,7 +10,6 @@ load_dotenv(dotenv_path=env_path)
 class Settings(BaseSettings):
     API_KEY: str
     DATABASE_URL: str
-    REDIS_URL: str
     RATE_LIMIT: str = "10/Minute"
     LOG_LEVEL: str = "INFO"
 
