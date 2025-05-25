@@ -1,7 +1,12 @@
 fastapi
 uvicorn
 sqlalchemy
-psycopg2-binary
+asyncpg
+pydantic
+pydantic_settings
 python-dotenv
-pydantic-settings
+loguru
 slowapi
+httpx
+alembic
+psycopg2-binary
