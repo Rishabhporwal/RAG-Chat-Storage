@@ -1,6 +1,7 @@
-from fastapi import APIRouter, Depends, Query
+from fastapi import APIRouter, Depends, Query, Request
 from sqlalchemy.ext.asyncio import AsyncSession
 from typing import List, Optional
+from app.core.rate_limiter import limiter
 
 from app.schemas.session import (
     ChatSessionCreate,
@@ -36,7 +37,9 @@ async def create_sessions(
 @router.get(
     "/", response_model=List[ChatSessionOut], dependencies=[Depends(api_key_auth)]
 )
+@limiter.limit("5/minute")
 async def get_sessions(
+    request: Request,
     user_id: str,
     is_favorite: Optional[bool] = Query(False),
     db: AsyncSession = Depends(get_db),
