@@ -1,9 +1,15 @@
 from pydantic_settings import BaseSettings
+from dotenv import load_dotenv
+import os
+
+# Explicitly load the .env file
+env_path = os.path.join(os.path.dirname(__file__), "..", "..", ".env")
+load_dotenv(dotenv_path=env_path)
 
 
 class Settings(BaseSettings):
-    API_KEY: str = "super-secret-key"
-    DATABASE_URL: str = "postgresql://postgres:postgres@db:5432/rag_chat"
+    API_KEY: str
+    DATABASE_URL: str
     REDIS_URL: str
     RATE_LIMIT: str = "100/Minute"
     LOG_LEVEL: str = "INFO"
@@ -13,3 +19,5 @@ class Settings(BaseSettings):
 
 
 settings = Settings()
+
+print(f"📦 DATABASE_URL used: {settings.DATABASE_URL}")

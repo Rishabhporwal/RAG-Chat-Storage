@@ -22,7 +22,7 @@ async def create_message(
 @router.get(
     "/session/{session_id}",
     response_model=List[ChatMessageOut],
-    dependencies=Depends(api_key_auth),
+    dependencies=[Depends(api_key_auth)],
 )
 async def get_messages(
     session_id: UUID,

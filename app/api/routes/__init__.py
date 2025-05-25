@@ -1,5 +1,6 @@
 from fastapi import FastAPI
-from app.api.routes import chat_message, chat_session
+from app.api.routes.chat_message import router as chat_message
+from app.api.routes.chat_session import router as chat_session
 
 
 def register_routes(app: FastAPI):

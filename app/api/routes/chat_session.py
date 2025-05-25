@@ -21,7 +21,7 @@ router = APIRouter(prefix="/session", tags=["Chat Sessions"])
 async def create_chat_session(
     session: ChatSessionCreate, db: AsyncSession = Depends(get_db)
 ):
-    return create_session(db, session)
+    return await create_session(db, session)
 
 
 @router.get(
@@ -38,7 +38,7 @@ async def read_chat_session(session_id: UUID, db: AsyncSession = Depends(get_db)
     "/", response_model=List[ChatSessionOut], dependencies=[Depends(api_key_auth)]
 )
 async def list_chat_session(user_id: str, db: AsyncSession = Depends(get_db)):
-    return list_sessions(db, user_id)
+    return await list_sessions(db, user_id)
 
 
 @router.patch(

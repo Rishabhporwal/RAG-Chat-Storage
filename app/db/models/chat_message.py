@@ -1,8 +1,8 @@
 import uuid
-from sqlalchemy import Column, String, ForeignKey, DateTime, Enum, Text
+from sqlalchemy import Column, ForeignKey, DateTime, Enum, Text
 from sqlalchemy.dialects.postgresql import UUID, JSONB
+from sqlalchemy.sql import func
 from sqlalchemy.orm import relationship
-from datetime import datetime, timezone
 from enum import Enum as PyEnum
 from app.db.base import Base
 
@@ -22,6 +22,6 @@ class ChatMessage(Base):
     sender = Column(Enum(senderEnum), nullable=False)
     content = Column(Text, nullable=False)
     context = Column(JSONB, nullable=True)
-    created_at = Column(DateTime, default=datetime.now(timezone.utc))
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
 
     session = relationship("ChatSession", back_populates="messages")

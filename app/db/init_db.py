@@ -3,5 +3,7 @@ from app.db.session import engine
 from app.db.models import *
 
 
-def init_db():
-    Base.metadata.create_all(bind=engine)
+async def init_db():
+    async with engine.begin() as conn:
+        await conn.run_sync(Base.metadata.create_all)
+    print("Tables created if not existing.")

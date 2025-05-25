@@ -10,6 +10,7 @@ from app.schemas.session import ChatSessionCreate, ChatSessionUpdate
 async def create_session(
     db: AsyncSession, session_data: ChatSessionCreate
 ) -> ChatSession:
+    print("SessionData", session_data)
     new_session = ChatSession(**session_data.dict())
     db.add(new_session)
     await db.commit()
