@@ -8,6 +8,14 @@ class ChatMessageCreate(BaseModel):
     session_id: UUID
     sender: str
     content: str
+    context: Optional[str] = None
+
+
+class ChatMessageOut(BaseModel):
+    id: UUID
+    session_id: UUID
+    sender: str
+    content: str
     context: Optional[str]
     created_at: datetime
 
