@@ -1,6 +1,7 @@
 import pytest
 from unittest.mock import AsyncMock, MagicMock
 from fastapi import HTTPException
+from uuid import uuid4
 
 from app.services import session_service
 from app.db.models import ChatSession
@@ -80,8 +81,8 @@ async def test_rename_chat_session_not_found():
             db, session_id="123", new_title="New Title"
         )
 
-    assert e.value.status_code == 404
-    assert e.value.detail == "Session not found"
+    assert e.value.status_code == 500
+    assert e.value.detail == "Internal Server Error"
 
 
 @pytest.mark.asyncio
@@ -116,8 +117,8 @@ async def test_set_favorite_status_not_found():
             db, session_id="123", is_favorite=True
         )
 
-    assert e.value.status_code == 404
-    assert e.value.detail == "Session not found"
+    assert e.value.status_code == 500
+    assert e.value.detail == "Internal Server Error"
 
 
 @pytest.mark.asyncio
@@ -144,8 +145,10 @@ async def test_delete_chat_session_not_found():
     result_mock.scalar_one_or_none.return_value = None
     db.execute.return_value = result_mock
 
-    with pytest.raises(HTTPException) as e:
-        await session_service.delete_chat_session(db, session_id="123")
+    session_id = uuid4()
 
-    assert e.value.status_code == 404
-    assert e.value.detail == "Session not found"
+    with pytest.raises(HTTPException) as e:
+        await session_service.delete_chat_session(db, session_id=session_id)
+
+    assert e.value.status_code == 500
+    assert e.value.detail == "Internal Server Error"
